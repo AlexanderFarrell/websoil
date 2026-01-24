@@ -4,7 +4,7 @@ import (
 	"github.com/AlexanderFarrell/websoil/account"
 	"os"
 	"fmt"
-	"github.com/AlexanderFarrell/websoil/core"
+	"github.com/AlexanderFarrell/websoil/web"
 	"github.com/gofiber/fiber/v2"
 	"net/url"
 	"path/filepath"
