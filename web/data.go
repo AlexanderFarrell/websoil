@@ -83,7 +83,7 @@ func CheckResultForChanges(result sql.Result, err error) error {
 	return err
 }
 
-func UpdateRow(account_id int, tableName string, identifier string, identifierRowName string,
+func UpdateRowWithAccount(account_id int, tableName string, identifier string, identifierRowName string,
 	fields map[string]interface{}, allowedFields map[string]int) error {
 	query := "UPDATE " + tableName + " SET "
 	args := []interface{}{}
@@ -103,6 +103,29 @@ func UpdateRow(account_id int, tableName string, identifier string, identifierRo
 
 	args = append(args, identifier)
 	args = append(args, account_id)
+
+	_, err := Database.Exec(query, args...)
+	return err
+}
+
+func UpdateRow(tableName string, identifier string, identifierRowName string,
+	fields map[string]interface{}, allowedFields map[string]int) error {
+	query := "UPDATE " + tableName + " SET "
+	args := []interface{}{}
+	i := 1
+
+	for field, value := range fields {
+		if _, ok := allowedFields[field]; ok {
+			query += fmt.Sprintf(" %s = $%v, ", field, i)
+			args = append(args, value)
+			i++
+		}
+	}
+
+	query = query[:len(query)-2] +
+		" where " + identifierRowName + " = $" + strconv.Itoa(i)
+
+	args = append(args, identifier)
 
 	_, err := Database.Exec(query, args...)
 	return err
