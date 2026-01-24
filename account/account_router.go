@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"github.com/AlexanderFarrell/websoil/core"
+	"github.com/AlexanderFarrell/websoil/web"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -26,7 +26,7 @@ var (
 type SettingsHandler func(accountID int, raw json.RawMessage) error
 
 // Provides username and password authentication via API responses
-func InitRouter(app *fiber.App, settingsHandler SettingsHandler) fiber.Router {
+func InitRouter(app *fiber.App) fiber.Router {
 	initEnvVariables()
 
 	api := app.Group("/account")
@@ -34,9 +34,9 @@ func InitRouter(app *fiber.App, settingsHandler SettingsHandler) fiber.Router {
 	api.Post("/login", login)
 	api.Get("/exists", usernameExists)
 	api.Get("/is_logged_in", isLoggedIn)
-	api.Patch("/settings", func(c *fiber.Ctx) error {
-		return updateSettings(c, settingsHandler)
-	})
+	// api.Patch("/settings", func(c *fiber.Ctx) error {
+	// 	return updateSettings(c, settingsHandler)
+	// })
 	api.Get("/details", getAccountDetails)
 	api.Get("/logout", logout)
 

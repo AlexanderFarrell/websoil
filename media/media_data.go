@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"github.com/AlexanderFarrell/websoil/core"
+	"github.com/AlexanderFarrell/websoil/web"
 )
 
 const (
