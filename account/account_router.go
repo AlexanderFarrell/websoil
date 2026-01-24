@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"zealotd/web"
+	"github.com/AlexanderFarrell/websoil/core"
 
 	"github.com/gofiber/fiber/v2"
 )

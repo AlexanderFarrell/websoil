@@ -1,10 +1,10 @@
 package media
 
 import (
-	"zealotd/apps/account"
+	"github.com/AlexanderFarrell/websoil/account"
 	"os"
 	"fmt"
-	"zealotd/web"
+	"github.com/AlexanderFarrell/websoil/core"
 	"github.com/gofiber/fiber/v2"
 	"net/url"
 	"path/filepath"
@@ -17,8 +17,8 @@ type FileStat struct {
 	Modified int64 `json:"modified_at"`
 }
 
-func InitRouter(app *fiber.App) fiber.Router {
-	InitEnvVariables()
+func InitRouter(app *fiber.App, shareMedia bool) fiber.Router {
+	InitEnvVariables(shareMedia)
 
 	api := app.Group("/media")
 	api.Use(account.RequireLoginMiddleware)

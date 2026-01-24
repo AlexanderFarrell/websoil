@@ -1,27 +1,30 @@
 package media
 
 import (
-	"fmt"
-	"os"
-	"strings"
-	"zealotd/web"
-	"encoding/hex"
 	"crypto/sha1"
+	"encoding/hex"
+	"fmt"
 	"io"
+	"os"
 	"path/filepath"
+	"strings"
+	"github.com/AlexanderFarrell/websoil/core"
 )
 
 const (
 	defaultUploadFolder = "./uploads"
+	defaultGlobalMedia  = "false"
 )
 
 var (
 	uploadFolder string
+	globalMedia  bool
 )
 
-func InitEnvVariables() {
+func InitEnvVariables(shareMedia bool) {
 
 	uploadFolder = web.GetEnvVar("UPLOAD_FOLDER", defaultUploadFolder)
+	globalMedia = shareMedia
 
 	if !CheckIfExists(uploadFolder) && uploadFolder != defaultUploadFolder {
 		panic("Set upload folder: " + uploadFolder + " does not exist")
@@ -30,8 +33,8 @@ func InitEnvVariables() {
 
 func DeleteFolder(username string, path string) error {
 	path = SanitizedForFileIO(path)
-	username = SanitizedForFileIO(username)
-	p := fmt.Sprintf(uploadFolder+"/%s/%s", username, path)
+	base := baseFolder(username)
+	p := filepath.Join(base, path)
 	err := os.RemoveAll(p)
 	return err
 }
@@ -44,7 +47,6 @@ func SanitizedForFileIO(s string) string {
 }
 
 func UserPath(username string, rel string) (string, error) {
-	username = SanitizedForFileIO(username)
 	rel = strings.TrimSpace(rel)
 
 	if strings.Contains(rel, "\x00") {
@@ -54,7 +56,7 @@ func UserPath(username string, rel string) (string, error) {
 	cleanRel := filepath.Clean("/" + rel)
 	cleanRel = strings.TrimPrefix(cleanRel, string(os.PathSeparator))
 
-	base := filepath.Clean(filepath.Join(uploadFolder, username))
+	base := baseFolder(username)
 	full := filepath.Clean(filepath.Join(base, cleanRel))
 
 	if full != base && !strings.HasPrefix(full, base+string(os.PathSeparator)) {
@@ -74,6 +76,14 @@ func CheckIfExists(path string) bool {
 	}
 
 	return false
+}
+
+func baseFolder(username string) string {
+	if globalMedia {
+		return filepath.Clean(uploadFolder)
+	}
+	username = SanitizedForFileIO(username)
+	return filepath.Clean(filepath.Join(uploadFolder, username))
 }
 
 func CalculateEtag(filePath string) (string, error) {
