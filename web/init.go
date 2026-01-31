@@ -13,7 +13,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
-func InitServer() *fiber.App {
+func InitServerWithConfig(cfg fiber.Config) *fiber.App {
 	app := fiber.New(fiber.Config{})
 	allowOrigins := GetEnvVar("CORS_ALLOW_ORIGINS", "http://localhost:3000")
 	app.Use(cors.New(cors.Config{
@@ -42,6 +42,15 @@ func InitServer() *fiber.App {
 	})
 
 	return app
+}
+
+func InitServer() *fiber.App {
+	return InitServerWithConfig(fiber.Config{})
+}
+
+func SetupStatic(app *fiber.App, endpoint string) {
+	publicFolderEnv := GetEnvVar("PUBLIC_FOLDER", "./client/public")
+	app.Static(endpoint, publicFolderEnv)
 }
 
 func RunServer(app *fiber.App) {
