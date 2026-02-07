@@ -137,37 +137,55 @@ func DeleteRow(accountID int, tableName string, identifier int, identifierRowNam
 	return err
 }
 
+func IsInitialized() (bool, error) {
+	const q = `
+		SELECT COUNT(*) 
+		FROM information_schema.tables
+		WHERE table_type = 'BASE TABLE'`
+	
+	var count int
+	if err := Database.QueryRow(q).Scan(&count); err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
 func InitDatabaseIfEmpty(initSQL string) {
 	// Check if a table exists, if not, need to initialize.
 	var table *string
 	err := Database.QueryRow(`SELECT to_regclass('public.item')`).Scan(&table)
 	if err != nil {
+	}
+
+	// Check if already initialized
+	initialized, err := IsInitialized()
+	if err != nil {
 		panic(fmt.Errorf("error determining if database is initialized, stopping: %v", err))
 	}
-
-	if table == nil {
-		fmt.Printf("Database Init - Started.\n")
-
-		// Not initialized. Require 10 seconds max to initialize.
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-
-		tx, err := Database.BeginTx(ctx, nil)
-		if err != nil {
-			panic(fmt.Errorf("begin tx: %w", err))
-		}
-
-		if _, err := tx.ExecContext(ctx, initSQL); err != nil {
-			_ = tx.Rollback()
-			panic(fmt.Errorf("begin tx: %w", err))
-		}
-
-		if err := tx.Commit(); err != nil {
-			panic(fmt.Errorf("begin tx: %w", err))
-		}
-
-		fmt.Printf("Database Init - Complete\n")
-	} else {
+	if initialized {
 		fmt.Printf("Database already initialized\n")
+		return;
 	}
+
+	fmt.Printf("Database Init - Started.\n")
+
+	// Not initialized. Require 10 seconds max to initialize.
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	tx, err := Database.BeginTx(ctx, nil)
+	if err != nil {
+		panic(fmt.Errorf("begin tx: %w", err))
+	}
+
+	if _, err := tx.ExecContext(ctx, initSQL); err != nil {
+		_ = tx.Rollback()
+		panic(fmt.Errorf("begin tx: %w", err))
+	}
+
+	if err := tx.Commit(); err != nil {
+		panic(fmt.Errorf("begin tx: %w", err))
+	}
+
+	fmt.Printf("Database Init - Complete\n")
 }
