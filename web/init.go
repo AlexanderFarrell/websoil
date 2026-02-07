@@ -59,6 +59,12 @@ func RunServer(app *fiber.App) {
 	log.Fatal(app.Listen("0.0.0.0:" + GetPort()))
 }
 
+func RunServerWithPortEnv(app *fiber.App, portEnv string, defaultPort string) {
+	app.Use(notFoundHandler)
+
+	log.Fatal(app.Listen("0.0.0.0:" + GetEnvVar(portEnv, defaultPort)))
+}
+
 func notFoundHandler(c *fiber.Ctx) error {
 	return c.SendStatus(404)
 }
