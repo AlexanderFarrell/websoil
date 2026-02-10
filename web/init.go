@@ -14,7 +14,7 @@ import (
 )
 
 func InitServerWithConfig(cfg fiber.Config) *fiber.App {
-	app := fiber.New(fiber.Config{})
+	app := fiber.New(cfg)
 	allowOrigins := GetEnvVar("CORS_ALLOW_ORIGINS", "http://localhost:3000")
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     allowOrigins,
