@@ -141,7 +141,9 @@ func IsInitialized() (bool, error) {
 	const q = `
 		SELECT COUNT(*) 
 		FROM information_schema.tables
-		WHERE table_type = 'BASE TABLE'`
+		WHERE table_type = 'BASE TABLE'
+		  AND table_schema NOT IN ('pg_catalog', 'information_schema')
+		  AND table_catalog = current_database();`
 	
 	var count int
 	if err := Database.QueryRow(q).Scan(&count); err != nil {
